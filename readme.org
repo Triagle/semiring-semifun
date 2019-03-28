@@ -1,0 +1,42 @@
+#+TITLE: Semiring Semifun
+
+A small collection of algorithms inspired by my COSC261 lecturer and [[http://stedolan.net/research/semirings.pdf][Fun with
+Semirings]].
+
+
+All of the algorithms are based on the concept of describing problems in terms
+of linear algebra defined over semirings. Semirings are objects from abstract
+algebra that play the analogue to rings without the requirement that an inverse
+exist for elements in the ring. The relationship is similar to how semigroups
+are groups without an inverse defined on the operation they work with.
+It turns out that even without invertibility notions of Linear Algebra make
+sense, making it possible to define matrices over semirings and with the
+addition of closure it's possible to even solve systems of linear equations.
+This is useful because a number of interesting Computer Science problems
+/cannot/ be modelled with traditional rings but can with semirings, examples
+would be regular expressions, graphs, boolean logic, along with any ring you
+would find in the wild (since all rings are semirings).
+
+
+This is all a little abstract, so let's get a little more concrete with
+examples. Take regular expressions, under the two operations concatenation and
+union. In order for these two operations to form a semiring with the regular
+expressions we need the following properties to hold,
+
+#+BEGIN_QUOTE
+A set R with two operations * and + form a semiring if:
+
+- (R, +) forms a commutative monoid, that is:
+  - (a + b) + c = a + (b + c)
+  - a + b = b + a
+  - a + 0 = 0 + a = a
+- (R, *) is a monoid, namely:
+  - (a * b) * c = a * (b * c)
+  - a * 1 = 1 * a = a
+- Multiplication distributes into addition:
+  - a * (b + c) = a*b + a*c
+  - (a + b) * c = a*c + b*c (note that the order for multiplication matters
+    since it isn't commutative).
+#+END_QUOTE
+
+It is easy to see that the definition as applied to regular expressions fits
