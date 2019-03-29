@@ -1,7 +1,10 @@
 #+TITLE: Semiring Semifun
 
 A small collection of algorithms inspired by my COSC261 lecturer and [[http://stedolan.net/research/semirings.pdf][Fun with
-Semirings]].
+Semirings]]. The core component of the repository is this readme file that
+hopefully brings across the ideas of semirings in a form that a clued in
+mathematics/compsci major could understand. All the code (and a little besides)
+presented in this readme is also available for you to compile through stack.
 
 
 All of the algorithms are based on the concept of describing problems in terms
@@ -37,6 +40,81 @@ A set R with two operations * and + form a semiring if:
   - a * (b + c) = a*b + a*c
   - (a + b) * c = a*c + b*c (note that the order for multiplication matters
     since it isn't commutative).
+- Multiplication by 0 annihilates R,
+  - 0 * a = a * 0 = 0
 #+END_QUOTE
 
-It is easy to see that the definition as applied to regular expressions fits
+It is easy to see that regular expressions fit our definition of a semiring if
+we let the additive operator be union and multiplication be concatenation (in
+fact regular expressions form more than just an ordinary semiring, but we'll
+come to that in a bit). Specifically,
+
+#+BEGIN_QUOTE
+Let R be the set of all regular expressions, and consider these operations under
+union and concatenation. Then,
+
+- (R, |) forms a commutative monoid, that is:
+  - (a | b) | c = a | (b | c)
+  - a | b = b | a
+  - a | \empty = \empty | a = a
+- R under concatenation forms a monoid, namely:
+  - (ab)c = a(bc)
+  - a\epsilon = \epsilon a = a
+- Concatenation distributes into union,
+  - a(b | c) = ab|ac
+  - (b | c)a = ba|ca
+- Concatenation with \empty annihilates R,
+  - \empty a = a \empty = \empty
+#+END_QUOTE
+
+Regular expressions are quite a nice example of a semiring, since they
+illustrate a common theme for semirings - that is the additive operation
+typically represents a choice and the multiplicative operation represents a
+sequencing of something. Thinking about semirings as "anything I can sequence
+and choose between" begins to give an idea of the breadth of practical
+applications this kind of structure might have. Better still it says nothing
+about undoing anything, which is useful since many structures in Computer Science don't have an
+inverse in the traditional sense like regular expressions. In any case we can
+cook up a neat little typeclass in Haskell that pretty much follows directly
+from the definition of a semiring in theory.
+
+#+BEGIN_SRC haskell
+class Semiring a where
+  one :: a
+  zero :: a
+  -- Plays the roll of addition in the semiring
+  add :: a -> a -> a
+  -- Plays the roll of multiplication in the semiring
+  mul :: a -> a -> a
+#+END_SRC
+
+Seems simple enough, let's implement this for a toy regex data structure
+supporting for the moment just union and concatenation.
+
+#+BEGIN_SRC haskell
+data Regex = Concatenation Regex Regex | Union Regex Regex | Epsilon | Null deriving (Show, Eq)
+
+instance Semiring Regex where
+  one = Epsilon
+  zero = Null
+
+  add Null a = a
+  add a Null = a
+  add a b = Union a b
+
+  mul _ Null = Null
+  mul Null _ = Null
+  mul a Epsilon = a
+  mul Epsilon a = a
+  mul a b = Concatenation a b
+#+END_SRC
+
+This code pretty much word for word copies the definition of concatenation and
+union you'll find in any textbook and by magic (or maths if you prefer to use
+the muggle term) we happen to meet all the criteria for a semiring. Great, but
+what can we do with it? It turns out that even with this limited interface with
+the type we get for free one of the most powerful concepts in mathematics,
+matrix multiplication.
+
+** Linear Algebra over Semirings Round One
+
